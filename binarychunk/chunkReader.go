@@ -1,60 +1,56 @@
 package binarychunk
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"math"
+)
 
 type reader struct {
 	data []byte
 }
 
-//read one byte from byte stream
 func (r *reader) readByte() byte {
 	b := r.data[0]
 	r.data = r.data[1:]
 	return b
 }
 
-//read bytes from byte stream
-func (r *reader) readBytes(x uint) []byte {
-	bytes := r.data[:x]
-	r.data = r.data[x:]
+func (r *reader) readBytes(n uint) []byte {
+	bytes := r.data[:n]
+	r.data = r.data[n:]
 	return bytes
 }
 
-//using little endian read uint32 from byte stream
 func (r *reader) readUint32() uint32 {
 	i := binary.LittleEndian.Uint32(r.data)
 	r.data = r.data[4:]
 	return i
 }
 
-//using little endian read uint64 from byte stream
 func (r *reader) readUint64() uint64 {
 	i := binary.LittleEndian.Uint64(r.data)
 	r.data = r.data[8:]
 	return i
 }
 
-//the luaInteger bytes map to int64 in go
 func (r *reader) readLuaInteger() int64 {
 	return int64(r.readUint64())
 }
 
-//the luaInteger bytes map to float64 in go
 func (r *reader) readLuaNumber() float64 {
-	return float64(r.readUint64())
+	return math.Float64frombits(r.readUint64())
 }
 
-//read string from byte stream
 func (r *reader) readString() string {
 	size := uint(r.readByte())
 	if size == 0 {
 		return ""
 	}
 	if size == 0xFF {
-		size = uint(r.readUint64())
+		size = uint(r.readUint64()) // size_t
 	}
-	bytes := r.readBytes(size)
-	return string(bytes)
+	bytes := r.readBytes(size - 1)
+	return string(bytes) // todo
 }
 
 //see prototyStruct.PNG, its a recursion call, for function
