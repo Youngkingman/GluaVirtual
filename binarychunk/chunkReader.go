@@ -1,6 +1,8 @@
 package binarychunk
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 type reader struct {
 	data []byte
@@ -65,19 +67,19 @@ func (r *reader) readProto(source string) *Prototype {
 		sourceName = source
 	}
 	return &Prototype{
-		Source:         sourceName,
-		LineDefined:    r.readUint32(),
-		LastLineDefine: r.readUint32(),
-		NumParams:      r.readByte(),
-		IsVararg:       r.readByte(),
-		MaxStackSize:   r.readByte(),
-		Code:           r.readCode(),
-		Constants:      r.readSomeConstants(),
-		Upvalues:       r.readUpvalues(),
-		Protos:         r.readSomeProto(source),
-		LineInfo:       r.readLineInfo(),
-		LocVars:        r.readLocVars(),
-		UpvalueNames:   r.readUpvalueNames(),
+		Source:          sourceName,
+		LineDefined:     r.readUint32(),
+		LastLineDefined: r.readUint32(),
+		NumParams:       r.readByte(),
+		IsVararg:        r.readByte(),
+		MaxStackSize:    r.readByte(),
+		Code:            r.readCode(),
+		Constants:       r.readSomeConstants(),
+		Upvalues:        r.readUpvalues(),
+		Protos:          r.readSomeProto(source),
+		LineInfo:        r.readLineInfo(),
+		LocVars:         r.readLocVars(),
+		UpvalueNames:    r.readUpvalueNames(),
 	}
 }
 
