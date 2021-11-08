@@ -7,7 +7,7 @@ import (
 )
 
 //series of type information method
-func (st *luaState) TypeName(tp LuaType) string {
+func (st *LuaState) TypeName(tp LuaType) string {
 	switch tp {
 	case LUA_TNONE:
 		return "no value"
@@ -30,7 +30,7 @@ func (st *luaState) TypeName(tp LuaType) string {
 	}
 }
 
-func (st *luaState) Type(idx int) LuaType {
+func (st *LuaState) Type(idx int) LuaType {
 	if st.stack.isValid(idx) {
 		val := st.stack.get(idx)
 		return typeOf(val)
@@ -38,72 +38,72 @@ func (st *luaState) Type(idx int) LuaType {
 	return LUA_TNONE
 }
 
-func (st *luaState) IsNone(idx int) bool {
+func (st *LuaState) IsNone(idx int) bool {
 	return st.Type(idx) == LUA_TNONE
 }
 
-func (st *luaState) IsNil(idx int) bool {
+func (st *LuaState) IsNil(idx int) bool {
 	return st.Type(idx) == LUA_TNIL
 }
 
-func (st *luaState) IsNoneOrNil(idx int) bool {
+func (st *LuaState) IsNoneOrNil(idx int) bool {
 	return st.Type(idx) <= LUA_TNIL
 }
 
-func (st *luaState) IsBoolean(idx int) bool {
+func (st *LuaState) IsBoolean(idx int) bool {
 	return st.Type(idx) == LUA_TBOOLEAN
 }
 
-func (st *luaState) IsTable(idx int) bool {
+func (st *LuaState) IsTable(idx int) bool {
 	return st.Type(idx) == LUA_TTABLE
 }
 
-func (st *luaState) IsFunction(idx int) bool {
+func (st *LuaState) IsFunction(idx int) bool {
 	return st.Type(idx) == LUA_TFUNCTION
 }
 
-func (st *luaState) IsThread(idx int) bool {
+func (st *LuaState) IsThread(idx int) bool {
 	return st.Type(idx) == LUA_TTHREAD
 }
 
-func (st *luaState) IsString(idx int) bool {
+func (st *LuaState) IsString(idx int) bool {
 	t := st.Type(idx)
 	return t == LUA_TSTRING || t == LUA_TNUMBER
 }
 
-func (st *luaState) IsNumber(idx int) bool {
+func (st *LuaState) IsNumber(idx int) bool {
 	_, ok := st.ToNumberX(idx)
 	return ok
 }
 
-func (st *luaState) IsInteger(idx int) bool {
+func (st *LuaState) IsInteger(idx int) bool {
 	val := st.stack.get(idx)
 	_, ok := val.(int64)
 	return ok
 }
 
-func (st *luaState) ToBoolean(idx int) bool {
+func (st *LuaState) ToBoolean(idx int) bool {
 	val := st.stack.get(idx)
 	return convertToBoolean(val)
 }
 
-func (st *luaState) ToInteger(idx int) int64 {
+func (st *LuaState) ToInteger(idx int) int64 {
 	i, _ := st.ToIntegerX(idx)
 	return i
 }
 
-func (st *luaState) ToIntegerX(idx int) (int64, bool) {
+func (st *LuaState) ToIntegerX(idx int) (int64, bool) {
 	val := st.stack.get(idx)
 	i, ok := val.(int64)
 	return i, ok
 }
 
-func (st *luaState) ToNumber(idx int) float64 {
+func (st *LuaState) ToNumber(idx int) float64 {
 	n, _ := st.ToNumberX(idx)
 	return n
 }
 
-func (st *luaState) ToNumberX(idx int) (float64, bool) {
+func (st *LuaState) ToNumberX(idx int) (float64, bool) {
 	val := st.stack.get(idx)
 	switch x := val.(type) {
 	case float64:
@@ -115,12 +115,12 @@ func (st *luaState) ToNumberX(idx int) (float64, bool) {
 	}
 }
 
-func (st *luaState) ToString(idx int) string {
+func (st *LuaState) ToString(idx int) string {
 	s, _ := st.ToStringX(idx)
 	return s
 }
 
-func (st *luaState) ToStringX(idx int) (string, bool) {
+func (st *LuaState) ToStringX(idx int) (string, bool) {
 	val := st.stack.get(idx)
 
 	switch x := val.(type) {

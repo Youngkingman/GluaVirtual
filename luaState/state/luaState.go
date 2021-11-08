@@ -1,11 +1,11 @@
 package state
 
-type luaState struct {
+type LuaState struct {
 	stack *luaStack
 }
 
-func New() *luaState {
-	return &luaState{
+func New() *LuaState {
+	return &LuaState{
 		stack: newLuaStack(20),
 	}
 }

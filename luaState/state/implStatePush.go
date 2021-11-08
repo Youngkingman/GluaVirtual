@@ -1,21 +1,21 @@
 package state
 
-func (st *luaState) PushNil() {
+func (st *LuaState) PushNil() {
 	st.stack.push(nil)
 }
 
-func (st *luaState) PushBoolean(b bool) {
+func (st *LuaState) PushBoolean(b bool) {
 	st.stack.push(b)
 }
 
-func (st *luaState) PushInteger(n int64) {
+func (st *LuaState) PushInteger(n int64) {
 	st.stack.push(n)
 }
 
-func (st *luaState) PushNumber(n float64) {
+func (st *LuaState) PushNumber(n float64) {
 	st.stack.push(n)
 }
 
-func (st *luaState) PushString(s string) {
+func (st *LuaState) PushString(s string) {
 	st.stack.push(s)
 }
