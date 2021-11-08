@@ -1,4 +1,4 @@
-package luaState
+package instruction
 
 type Instruction uint32 // Instruction
 

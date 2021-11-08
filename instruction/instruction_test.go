@@ -1,4 +1,4 @@
-package luaState
+package instruction
 
 import (
 	"fmt"
