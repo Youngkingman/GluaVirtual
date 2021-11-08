@@ -48,19 +48,19 @@ type header struct {
 
 //see prototyStruct.PNG
 type Prototype struct {
-	Source         string
-	LineDefined    uint32
-	LastLineDefine uint32
-	NumParams      byte
-	IsVararg       byte
-	MaxStackSize   byte
-	Code           []uint32
-	Constants      []interface{}
-	Upvalues       []Upvalue
-	Protos         []*Prototype
-	LineInfo       []uint32
-	LocVars        []LocVar
-	UpvalueNames   []string
+	Source          string
+	LineDefined     uint32
+	LastLineDefined uint32
+	NumParams       byte
+	IsVararg        byte
+	MaxStackSize    byte
+	Code            []uint32
+	Constants       []interface{}
+	Upvalues        []Upvalue
+	Protos          []*Prototype
+	LineInfo        []uint32
+	LocVars         []LocVar
+	UpvalueNames    []string
 }
 
 type Upvalue struct {
