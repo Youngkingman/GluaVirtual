@@ -1,6 +1,8 @@
 package luaApi
 
 //basic type from lua => go
+type LuaType = int
+
 const (
 	LUA_TNONE = iota - 1 // -1
 	LUA_TNIL
@@ -14,7 +16,34 @@ const (
 	LUA_TTHREAD
 )
 
-type LuaType = int
+//stack arith operation type
+type ArithOp = int
+
+const (
+	LUA_OPADD  = iota // +
+	LUA_OPSUB         // -
+	LUA_OPMUL         // *
+	LUA_OPMOD         // %
+	LUA_OPPOW         // ^
+	LUA_OPDIV         // /
+	LUA_OPIDIV        // //
+	LUA_OPBAND        // &
+	LUA_OPBOR         // |
+	LUA_OPBXOR        // ~
+	LUA_OPSHL         // <<
+	LUA_OPSHR         // >>
+	LUA_OPUNM         // -
+	LUA_OPBNOT        // ~
+)
+
+//compare operation type
+type CompareOp = int
+
+const (
+	LUA_OPEQ = iota // ==
+	LUA_OPLT        // <
+	LUA_OPLE        // <=
+)
 
 type LuaStateInterface interface {
 	/* basic stack manipulation */
@@ -55,4 +84,9 @@ type LuaStateInterface interface {
 	PushInteger(n int64)
 	PushNumber(n float64)
 	PushString(s string)
+	/*Arith Methods*/
+	ArithOp(op ArithOp)
+	Compare(idx1, idx2 int, op CompareOp) bool
+	Len(idx int)
+	Concat(n int)
 }
