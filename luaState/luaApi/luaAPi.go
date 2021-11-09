@@ -85,7 +85,7 @@ type LuaStateInterface interface {
 	PushNumber(n float64)
 	PushString(s string)
 	/*Arith Methods*/
-	ArithOp(op ArithOp)
+	Arith(op ArithOp)
 	Compare(idx1, idx2 int, op CompareOp) bool
 	Len(idx int)
 	Concat(n int)

@@ -23,7 +23,6 @@ func (st *LuaState) Concat(n int) {
 				st.stack.push(s1 + s2)
 				continue
 			}
-
 			panic("concatenation error!")
 		}
 	}

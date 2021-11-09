@@ -53,7 +53,7 @@ var operators = []operator{
 	{bnot, nil},
 }
 
-func (st *LuaState) ArithOp(op ArithOp) {
+func (st *LuaState) Arith(op ArithOp) {
 	var a, b luaValue //operands
 	b = st.stack.pop()
 	if op != LUA_OPUNM && op != LUA_OPBNOT {
