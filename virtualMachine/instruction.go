@@ -1,4 +1,4 @@
-package instruction
+package vm
 
 type Instruction uint32 // Instruction
 

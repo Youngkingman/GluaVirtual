@@ -1,4 +1,4 @@
-package instruction
+package vm
 
 //small endian, means the first bit indicate OP:6
 const (

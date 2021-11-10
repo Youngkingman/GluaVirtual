@@ -1,11 +1,5 @@
 package state
 
-import (
-	. "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
-)
-
-var _ LuaStateInterface = (*LuaState)(nil)
-
 func (st *LuaState) GetTop() int {
 	return st.stack.top
 }
