@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	filename = "test.out"
+	//filename = "test.out"
+	filename = "fornum.out"
 )
 
 func Test_ParseFunc(t *testing.T) {
