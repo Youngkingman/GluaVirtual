@@ -64,3 +64,49 @@ func concat(i Instruction, vm luaApi.LuaVMInterface) {
 	vm.Concat(n)
 	vm.Replace(a)
 }
+
+func _compare(i Instruction, vm luaApi.LuaVMInterface, op luaApi.CompareOp) {
+	a, b, c := i.ABC()
+
+	vm.GetRK(b)
+	vm.GetRK(c)
+	//栈顶的两个数，即操作数b c代表的值
+	if vm.Compare(-2, -1, op) != (a != 0) {
+		vm.OffsetPC(1)
+	}
+	vm.Pop(2)
+}
+
+func eq(i Instruction, vm luaApi.LuaVMInterface) { _compare(i, vm, luaApi.LUA_OPEQ) }
+func lt(i Instruction, vm luaApi.LuaVMInterface) { _compare(i, vm, luaApi.LUA_OPLT) }
+func le(i Instruction, vm luaApi.LuaVMInterface) { _compare(i, vm, luaApi.LUA_OPLE) }
+
+func not(i Instruction, vm luaApi.LuaVMInterface) {
+	a, b, _ := i.ABC()
+	a += 1
+	b += 1
+	vm.PushBoolean(!vm.ToBoolean(b))
+	vm.Replace(a)
+}
+
+// if (R(B) <=> C) then R(A) := R(B) else pc++， <=>按bool值比较
+//逻辑与 逻辑或 方法
+func testSet(i Instruction, vm luaApi.LuaVMInterface) {
+	a, b, c := i.ABC()
+	b += 1
+	a += 1
+	if vm.ToBoolean(b) == (c != 0) {
+		vm.Copy(b, a)
+	} else {
+		vm.OffsetPC(1)
+	}
+}
+
+// if not (R(A) <=> C) then pc++
+func test(i Instruction, vm luaApi.LuaVMInterface) {
+	a, _, c := i.ABC()
+	a += 1
+	if vm.ToBoolean(a) != (c != 0) {
+		vm.OffsetPC(1)
+	}
+}
