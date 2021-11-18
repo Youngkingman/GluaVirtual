@@ -1,6 +1,8 @@
 package vm
 
-import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+import (
+	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+)
 
 type Instruction uint32 // Instruction
 
@@ -42,16 +44,15 @@ func (inst Instruction) ABC() (a, b, c int) {
 //parse operation number from instruction in ABx mode
 func (inst Instruction) ABx() (a, bx int) {
 	a = int(inst >> 6 & 0xFF)
-	bx = int(inst >> 14 & 0x1FF)
+	bx = int(inst >> 14)
 	return
 }
 
 //parse operation number from instruction in AsBx mode
 //sbx is a signed number encoded in offset binary
 func (inst Instruction) AsBx() (a, sbx int) {
-	a, sbx = inst.ABx()
-	sbx -= MAXARG_sBx
-	return
+	a, bx := inst.ABx()
+	return a, bx - MAXARG_sBx
 }
 
 //parse operation number from instruction in Ax mode

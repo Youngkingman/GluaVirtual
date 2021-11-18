@@ -25,7 +25,12 @@ func Test_ParseFunc(t *testing.T) {
 }
 
 func Test_ExcuteOpt(t *testing.T) {
-
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	proto := binarychunk.Undump(data)
+	LuaEntry(proto)
 }
 
 func list(f *binarychunk.Prototype) {
@@ -166,4 +171,22 @@ func printStack(ls *state.LuaState) {
 		}
 	}
 	fmt.Println()
+}
+
+func LuaEntry(proto *binarychunk.Prototype) {
+	nRegs := int(proto.MaxStackSize)
+	st := state.New(nRegs+8, proto)
+	st.SetTop(nRegs)
+	for {
+		pc := st.PC()
+		inst := Instruction(st.Fetch())
+		if inst.Opcode() != OP_RETURN {
+			inst.Execute(st)
+
+			fmt.Printf("[%02d] %s", pc+1, inst.OpName())
+			printStack(st)
+		} else {
+			break
+		}
+	}
 }
