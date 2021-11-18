@@ -32,3 +32,12 @@ func loadK(i Instruction, vm luaApi.LuaVMInterface) {
 	vm.GetConst(bx)
 	vm.Replace(a)
 }
+
+func loadKx(i Instruction, vm luaApi.LuaVMInterface) {
+	a, _ := i.ABx()
+	a += 1
+	ax := Instruction(vm.Fetch()).Ax()
+
+	vm.GetConst(ax)
+	vm.Replace(a)
+}

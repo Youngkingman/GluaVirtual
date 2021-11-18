@@ -1,5 +1,7 @@
 package vm
 
+import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+
 type Instruction uint32 // Instruction
 
 // BX  |------------------|------------------|
@@ -75,4 +77,13 @@ func (inst Instruction) ArgBMode() byte {
 //get argCMode from instruction
 func (inst Instruction) ArgCMode() byte {
 	return opcodes[inst.Opcode()].argCMode
+}
+
+func (inst Instruction) Execute(vm luaApi.LuaVMInterface) {
+	action := opcodes[inst.Opcode()].action
+	if action != nil {
+		action(inst, vm)
+	} else {
+		panic(inst.OpName() + " currently dosen't have action")
+	}
 }

@@ -40,7 +40,7 @@ func shr(i Instruction, vm luaApi.LuaVMInterface)  { _binaryArith(i, vm, luaApi.
 func unm(i Instruction, vm luaApi.LuaVMInterface)  { _unaryArith(i, vm, luaApi.LUA_OPUNM) }   // -
 func bnot(i Instruction, vm luaApi.LuaVMInterface) { _unaryArith(i, vm, luaApi.LUA_OPBNOT) }  // ~
 
-func _len(i Instruction, vm luaApi.LuaVMInterface) {
+func length(i Instruction, vm luaApi.LuaVMInterface) {
 	a, b, _ := i.ABC()
 	a += 1
 	b += 1
