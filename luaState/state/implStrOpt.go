@@ -5,6 +5,8 @@ func (st *LuaState) Len(idx int) {
 
 	if s, ok := val.(string); ok {
 		st.stack.push(int64(len(s)))
+	} else if t, ok := val.(*luaTable); ok {
+		st.stack.push(int64(t.tablen()))
 	} else {
 		panic("length error!")
 	}

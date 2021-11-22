@@ -1,6 +1,10 @@
 package state
 
-import "github.com/Youngkingman/GluaVirtual/numTrans"
+import (
+	"math"
+
+	"github.com/Youngkingman/GluaVirtual/numTrans"
+)
 
 type luaTable struct {
 	luaArr []luaValue
@@ -35,4 +39,66 @@ func _float2Integer(key luaValue) luaValue {
 		}
 	}
 	return key
+}
+
+func (tab *luaTable) put(key, val luaValue) {
+	if key == nil {
+		panic("nil key is unacceptable")
+	}
+	if f, ok := key.(float64); ok && math.IsNaN(f) {
+		panic("NaN key is unacceptable")
+	}
+	key = _float2Integer(key)
+
+	//整数索引使用数组
+	if idx, ok := key.(int64); ok && idx >= 1 {
+		arrLen := int64(len(tab.luaArr))
+		if idx <= arrLen {
+			tab.luaArr[idx-1] = val
+			if idx == arrLen && val == nil {
+				tab.shrinkArray()
+			}
+			return
+		}
+		if idx == arrLen+1 {
+			delete(tab.luaMap, key)
+			if val != nil {
+				tab.luaArr = append(tab.luaArr, val)
+				tab.expandArray()
+			}
+			return
+		}
+	}
+
+	if val != nil {
+		if tab.luaMap == nil {
+			tab.luaMap = make(map[luaValue]luaValue, 8)
+		}
+		tab.luaMap[key] = val
+	} else {
+		delete(tab.luaMap, key)
+	}
+}
+
+func (tab *luaTable) shrinkArray() {
+	for i := len(tab.luaArr) - 1; i >= 0; i-- {
+		if tab.luaArr[i] == nil {
+			tab.luaArr = tab.luaArr[0:i]
+		}
+	}
+}
+
+func (tab *luaTable) expandArray() {
+	for idx := int64(len(tab.luaArr)) + 1; true; idx++ {
+		if val, has := tab.luaMap[idx]; has {
+			delete(tab.luaMap, idx)
+			tab.luaArr = append(tab.luaArr, val)
+		} else {
+			break
+		}
+	}
+}
+
+func (tab *luaTable) tablen() int {
+	return len(tab.luaArr)
 }
