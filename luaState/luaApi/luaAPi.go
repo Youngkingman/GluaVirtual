@@ -100,4 +100,5 @@ type LuaStateInterface interface {
 	SetI(idx int, n int64)
 	/*lua function call method*/
 	Load(chunk []byte, chunkName, mode string) int
+	Call(nArgs, nResults int)
 }

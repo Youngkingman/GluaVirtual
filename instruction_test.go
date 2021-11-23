@@ -1,4 +1,4 @@
-package vm
+package main
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/Youngkingman/GluaVirtual/binarychunk"
 	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 	"github.com/Youngkingman/GluaVirtual/luaState/state"
+	vm "github.com/Youngkingman/GluaVirtual/virtualMachine"
 )
 
 const (
@@ -69,7 +70,7 @@ func printCode(f *binarychunk.Prototype) {
 		if len(f.LineInfo) > 0 {
 			line = fmt.Sprintf("%d", f.LineInfo[pc])
 		}
-		i := Instruction(c)
+		i := vm.Instruction(c)
 		fmt.Printf("\t%d\t[%s]\t%s \t", pc+1, line, i.OpName())
 		printOperands(i)
 		fmt.Printf("\n")
@@ -119,37 +120,37 @@ func upvalName(f *binarychunk.Prototype, idx int) string {
 	return "-"
 }
 
-func printOperands(i Instruction) {
+func printOperands(i vm.Instruction) {
 	switch i.OpMode() {
-	case IABC:
+	case vm.IABC:
 		a, b, c := i.ABC()
 		fmt.Printf("%d", a)
-		if i.ArgBMode() != OpArgN { //operands is used
+		if i.ArgBMode() != vm.OpArgN { //operands is used
 			if b > 0xFF {
 				fmt.Printf(" %d", -1-b&0xFF) //means constants index
 			} else {
 				fmt.Printf(" %d", b)
 			}
 		}
-		if i.ArgCMode() != OpArgN { //operator is used
+		if i.ArgCMode() != vm.OpArgN { //operator is used
 			if c > 0xff {
 				fmt.Printf(" %d", -1-c&0xFF) //means constants index
 			} else {
 				fmt.Printf(" %d", c)
 			}
 		}
-	case IABx:
+	case vm.IABx:
 		a, bx := i.ABx()
 		fmt.Printf("%d", a)
-		if i.ArgBMode() == OpArgK {
+		if i.ArgBMode() == vm.OpArgK {
 			fmt.Printf(" %d", -1-bx)
-		} else if i.ArgBMode() == OpArgU {
+		} else if i.ArgBMode() == vm.OpArgU {
 			fmt.Printf(" %d", bx)
 		}
-	case IAsBx:
+	case vm.IAsBx:
 		a, sbx := i.AsBx()
 		fmt.Printf("%d %d", a, sbx)
-	case IAx:
+	case vm.IAx:
 		ax := i.Ax()
 		fmt.Printf("%d", -1-ax)
 	}
@@ -179,8 +180,8 @@ func LuaEntry(proto *binarychunk.Prototype) {
 	st.SetTop(nRegs)
 	for {
 		pc := st.PC()
-		inst := Instruction(st.Fetch())
-		if inst.Opcode() != OP_RETURN {
+		inst := vm.Instruction(st.Fetch())
+		if inst.Opcode() != vm.OP_RETURN {
 			inst.Execute(st)
 
 			fmt.Printf("[%02d] %s", pc+1, inst.OpName())
