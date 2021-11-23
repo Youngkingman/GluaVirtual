@@ -10,14 +10,21 @@ var _ luaApi.LuaVMInterface = (*LuaState)(nil)    //check extent luaApi for VM
 
 type LuaState struct {
 	stack *luaStack
-	pc    int
-	proto *binarychunk.Prototype
 }
 
 func New(stackSize int, proto *binarychunk.Prototype) *LuaState {
 	return &LuaState{
 		stack: newLuaStack(stackSize),
-		proto: proto,
-		pc:    0,
 	}
+}
+
+func (st *LuaState) pushLuaStack(stack *luaStack) {
+	stack.prev = st.stack
+	st.stack = stack
+}
+
+func (st *LuaState) popLuaStack() {
+	stack := st.stack
+	st.stack = stack.prev
+	stack.prev = nil
 }

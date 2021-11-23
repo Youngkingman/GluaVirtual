@@ -3,6 +3,12 @@ package state
 type luaStack struct {
 	slots []luaValue
 	top   int
+
+	//function call stack segment
+	prev    *luaStack
+	closure *luaClosure
+	varargs []luaValue
+	pc      int
 }
 
 func newLuaStack(size int) *luaStack {
@@ -71,5 +77,27 @@ func (stk *luaStack) inverse(from, to int) {
 		stk.slots[from], stk.slots[to] = stk.slots[to], stk.slots[from]
 		from++
 		to--
+	}
+}
+
+func (stk *luaStack) popN(n int) []luaValue {
+	vals := make([]luaValue, n)
+	for i := n - 1; i >= 0; i-- {
+		vals[i] = stk.pop()
+	}
+	return vals
+}
+
+func (stk *luaStack) pushN(vals []luaValue, n int) {
+	nVals := len(vals)
+	if n < 0 {
+		n = nVals
+	}
+	for i := 0; i < n; i++ {
+		if i < nVals {
+			stk.push(vals[i])
+		} else {
+			stk.push(nil)
+		}
 	}
 }

@@ -21,6 +21,8 @@ func typeOf(val luaValue) LuaType {
 		return LUA_TSTRING
 	case *luaTable:
 		return LUA_TTABLE
+	case *luaClosure:
+		return LUA_TFUNCTION
 	default:
 		panic("fuck type")
 	}
