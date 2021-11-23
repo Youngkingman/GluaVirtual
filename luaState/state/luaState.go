@@ -1,7 +1,6 @@
 package state
 
 import (
-	"github.com/Youngkingman/GluaVirtual/binarychunk"
 	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 )
 
@@ -12,9 +11,9 @@ type LuaState struct {
 	stack *luaStack
 }
 
-func New(stackSize int, proto *binarychunk.Prototype) *LuaState {
+func New() *LuaState {
 	return &LuaState{
-		stack: newLuaStack(stackSize),
+		stack: newLuaStack(20),
 	}
 }
 

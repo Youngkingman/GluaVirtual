@@ -8,7 +8,7 @@ import (
 )
 
 func Test_StackBasicFunc(t *testing.T) {
-	st := New(20, nil)
+	st := New()
 	st.PushBoolean(true)
 	printStack(st)
 	st.PushNumber(10)
@@ -30,7 +30,8 @@ func Test_StackBasicFunc(t *testing.T) {
 }
 
 func Test_StackArithMethod(t *testing.T) {
-	st := New(20, nil)
+	//st := New(20, nil)
+	st := New()
 	st.PushInteger(1)
 	st.PushString("2.00")
 	st.PushString("3.0")

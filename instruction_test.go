@@ -11,13 +11,14 @@ import (
 	vm "github.com/Youngkingman/GluaVirtual/virtualMachine"
 )
 
-const (
-	//filename = "test.out"
-	filename = "fornum.out"
-)
+var filenames = [...]string{
+	"test.out",
+	"fornum.out",
+	"funcCall.out",
+}
 
 func Test_ParseFunc(t *testing.T) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := ioutil.ReadFile(filenames[0])
 	if err != nil {
 		panic(err)
 	}
@@ -26,12 +27,22 @@ func Test_ParseFunc(t *testing.T) {
 }
 
 func Test_ExcuteOpt(t *testing.T) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := ioutil.ReadFile(filenames[1])
 	if err != nil {
 		panic(err)
 	}
 	proto := binarychunk.Undump(data)
 	LuaEntry(proto)
+}
+
+func Test_FunctionCall(t *testing.T) {
+	data, err := ioutil.ReadFile(filenames[2])
+	if err != nil {
+		panic(err)
+	}
+	st := state.New()
+	st.Load(data, filenames[2], "b")
+	st.Call(0, 0)
 }
 
 func list(f *binarychunk.Prototype) {
@@ -176,7 +187,7 @@ func printStack(ls *state.LuaState) {
 
 func LuaEntry(proto *binarychunk.Prototype) {
 	nRegs := int(proto.MaxStackSize)
-	st := state.New(nRegs+8, proto)
+	st := state.New()
 	st.SetTop(nRegs)
 	for {
 		pc := st.PC()
