@@ -8,13 +8,17 @@ var _ luaApi.LuaStateInterface = (*LuaState)(nil) //check implement of official 
 var _ luaApi.LuaVMInterface = (*LuaState)(nil)    //check extent luaApi for VM
 
 type LuaState struct {
-	stack *luaStack
+	registry *luaTable //状态机注册表
+	stack    *luaStack
 }
 
 func New() *LuaState {
-	return &LuaState{
-		stack: newLuaStack(20),
-	}
+	registry := newLuaTable(0, 0)
+	registry.put(luaApi.LUA_RIDX_GLOBALS, newLuaTable(0, 0))
+
+	st := &LuaState{registry: registry}
+	st.pushLuaStack(newLuaStack(luaApi.LUA_MINSTACK, st))
+	return st
 }
 
 func (st *LuaState) pushLuaStack(stack *luaStack) {

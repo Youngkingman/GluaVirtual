@@ -45,6 +45,13 @@ const (
 	LUA_OPLE        // <=
 )
 
+type GoFunction func(LuaStateInterface) int
+
+const LUA_MINSTACK = 20
+const LUAI_MAXSTACK = 1000000                   //正负一百万为lua栈有效索引，正常够用
+const LUA_REGISTRYINDEX = -LUAI_MAXSTACK - 1000 //负的一百万是有效索引，减去1000为伪索引
+const LUA_RIDX_GLOBALS int64 = 2
+
 type LuaStateInterface interface {
 	/* basic stack manipulation */
 	GetTop() int
@@ -101,4 +108,13 @@ type LuaStateInterface interface {
 	/*lua function call method*/
 	Load(chunk []byte, chunkName, mode string) int
 	Call(nArgs, nResults int)
+	/*go closure call method*/
+	PushGoFunction(f GoFunction)
+	IsGoFunction(idx int) bool
+	ToGoFunction(idx int) GoFunction
+	/*global environment support*/
+	PushGlobalTable()
+	GetGlobal(name string) LuaType
+	SetGlobal(name string)
+	Register(name string, f GoFunction)
 }
