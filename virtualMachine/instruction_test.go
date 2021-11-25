@@ -12,7 +12,8 @@ import (
 
 const (
 	//filename = "test.out"
-	filename = "fornum.out"
+	//filename = "fornum.out"
+	filename = "table.out"
 )
 
 func Test_ParseFunc(t *testing.T) {
