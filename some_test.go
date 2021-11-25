@@ -44,7 +44,7 @@ func Test_Print(t *testing.T) {
 	}
 	st := state.New()
 	st.Register("print", print)
-	st.Load(data, "chunk", "b")
+	st.Load(data, filenames[3], "b")
 	st.Call(0, 0)
 }
 
