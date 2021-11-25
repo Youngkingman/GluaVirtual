@@ -10,7 +10,7 @@ local function max(...)
 end
 
 local function assert(v)
-    if not v then fail() end
+    
 end
 
 local v1 = max(3,4,5,6,6,7,4,2,15,67)
