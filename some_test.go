@@ -19,21 +19,12 @@ var filenames = [...]string{
 }
 
 func Test_ParseFunc(t *testing.T) {
-	data, err := ioutil.ReadFile(filenames[0])
-	if err != nil {
-		panic(err)
-	}
-	proto := binarychunk.Undump(data)
-	list(proto)
-}
-
-func Test_ExcuteOpt(t *testing.T) {
 	data, err := ioutil.ReadFile(filenames[1])
 	if err != nil {
 		panic(err)
 	}
 	proto := binarychunk.Undump(data)
-	LuaEntry(proto)
+	list(proto)
 }
 
 func Test_FunctionCall(t *testing.T) {
