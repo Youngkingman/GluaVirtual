@@ -1,7 +1,6 @@
 package state
 
 import (
-	"github.com/Youngkingman/GluaVirtual/binarychunk"
 	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 )
 
@@ -9,15 +8,26 @@ var _ luaApi.LuaStateInterface = (*LuaState)(nil) //check implement of official 
 var _ luaApi.LuaVMInterface = (*LuaState)(nil)    //check extent luaApi for VM
 
 type LuaState struct {
-	stack *luaStack
-	pc    int
-	proto *binarychunk.Prototype
+	registry *luaTable //状态机注册表
+	stack    *luaStack
 }
 
-func New(stackSize int, proto *binarychunk.Prototype) *LuaState {
-	return &LuaState{
-		stack: newLuaStack(stackSize),
-		proto: proto,
-		pc:    0,
-	}
+func New() *LuaState {
+	registry := newLuaTable(0, 0)
+	registry.put(luaApi.LUA_RIDX_GLOBALS, newLuaTable(0, 0))
+
+	st := &LuaState{registry: registry}
+	st.pushLuaStack(newLuaStack(luaApi.LUA_MINSTACK, st))
+	return st
+}
+
+func (st *LuaState) pushLuaStack(stack *luaStack) {
+	stack.prev = st.stack
+	st.stack = stack
+}
+
+func (st *LuaState) popLuaStack() {
+	stack := st.stack
+	st.stack = stack.prev
+	stack.prev = nil
 }

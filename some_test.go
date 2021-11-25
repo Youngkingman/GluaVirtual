@@ -1,4 +1,4 @@
-package vm
+package main
 
 import (
 	"fmt"
@@ -8,16 +8,18 @@ import (
 	"github.com/Youngkingman/GluaVirtual/binarychunk"
 	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 	"github.com/Youngkingman/GluaVirtual/luaState/state"
+	vm "github.com/Youngkingman/GluaVirtual/virtualMachine"
 )
 
-const (
-	//filename = "test.out"
-	//filename = "fornum.out"
-	filename = "table.out"
-)
+var filenames = [...]string{
+	"test.out",
+	"fornum.out",
+	"funcCall.out",
+	"hw.out",
+}
 
 func Test_ParseFunc(t *testing.T) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := ioutil.ReadFile(filenames[1])
 	if err != nil {
 		panic(err)
 	}
@@ -25,13 +27,41 @@ func Test_ParseFunc(t *testing.T) {
 	list(proto)
 }
 
-func Test_ExcuteOpt(t *testing.T) {
-	data, err := ioutil.ReadFile(filename)
+func Test_FunctionCall(t *testing.T) {
+	data, err := ioutil.ReadFile(filenames[1])
 	if err != nil {
 		panic(err)
 	}
-	proto := binarychunk.Undump(data)
-	LuaEntry(proto)
+	st := state.New()
+	st.Load(data, filenames[1], "b")
+	st.Call(0, 0)
+}
+
+func Test_Print(t *testing.T) {
+	data, err := ioutil.ReadFile(filenames[3])
+	if err != nil {
+		panic(err)
+	}
+	st := state.New()
+	st.Register("print", print)
+	st.Load(data, filenames[3], "b")
+	st.Call(0, 0)
+}
+
+func print(st luaApi.LuaStateInterface) int {
+	nArgs := st.GetTop()
+	for i := 1; i <= nArgs; i++ {
+		if st.IsBoolean(i) {
+			fmt.Printf("%t", st.ToBoolean(i))
+		} else {
+			fmt.Print(st.TypeName(st.Type(i)))
+		}
+		if i < nArgs {
+			fmt.Print("\t")
+		}
+	}
+	fmt.Println()
+	return 0
 }
 
 func list(f *binarychunk.Prototype) {
@@ -70,7 +100,7 @@ func printCode(f *binarychunk.Prototype) {
 		if len(f.LineInfo) > 0 {
 			line = fmt.Sprintf("%d", f.LineInfo[pc])
 		}
-		i := Instruction(c)
+		i := vm.Instruction(c)
 		fmt.Printf("\t%d\t[%s]\t%s \t", pc+1, line, i.OpName())
 		printOperands(i)
 		fmt.Printf("\n")
@@ -120,37 +150,37 @@ func upvalName(f *binarychunk.Prototype, idx int) string {
 	return "-"
 }
 
-func printOperands(i Instruction) {
+func printOperands(i vm.Instruction) {
 	switch i.OpMode() {
-	case IABC:
+	case vm.IABC:
 		a, b, c := i.ABC()
 		fmt.Printf("%d", a)
-		if i.ArgBMode() != OpArgN { //operands is used
+		if i.ArgBMode() != vm.OpArgN { //operands is used
 			if b > 0xFF {
 				fmt.Printf(" %d", -1-b&0xFF) //means constants index
 			} else {
 				fmt.Printf(" %d", b)
 			}
 		}
-		if i.ArgCMode() != OpArgN { //operator is used
+		if i.ArgCMode() != vm.OpArgN { //operator is used
 			if c > 0xff {
 				fmt.Printf(" %d", -1-c&0xFF) //means constants index
 			} else {
 				fmt.Printf(" %d", c)
 			}
 		}
-	case IABx:
+	case vm.IABx:
 		a, bx := i.ABx()
 		fmt.Printf("%d", a)
-		if i.ArgBMode() == OpArgK {
+		if i.ArgBMode() == vm.OpArgK {
 			fmt.Printf(" %d", -1-bx)
-		} else if i.ArgBMode() == OpArgU {
+		} else if i.ArgBMode() == vm.OpArgU {
 			fmt.Printf(" %d", bx)
 		}
-	case IAsBx:
+	case vm.IAsBx:
 		a, sbx := i.AsBx()
 		fmt.Printf("%d %d", a, sbx)
-	case IAx:
+	case vm.IAx:
 		ax := i.Ax()
 		fmt.Printf("%d", -1-ax)
 	}
@@ -176,12 +206,12 @@ func printStack(ls *state.LuaState) {
 
 func LuaEntry(proto *binarychunk.Prototype) {
 	nRegs := int(proto.MaxStackSize)
-	st := state.New(nRegs+8, proto)
+	st := state.New()
 	st.SetTop(nRegs)
 	for {
 		pc := st.PC()
-		inst := Instruction(st.Fetch())
-		if inst.Opcode() != OP_RETURN {
+		inst := vm.Instruction(st.Fetch())
+		if inst.Opcode() != vm.OP_RETURN {
 			inst.Execute(st)
 
 			fmt.Printf("[%02d] %s", pc+1, inst.OpName())

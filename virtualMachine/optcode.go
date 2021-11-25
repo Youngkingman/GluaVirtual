@@ -2,7 +2,8 @@ package vm
 
 import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 
-//small endian, means the first bit indicate OP:6
+/* OpMode */
+/* basic instruction format */
 const (
 	IABC  = iota // [  B:9  ][  C:9  ][ A:8  ][OP:6]
 	IABx         // [      Bx:18     ][ A:8  ][OP:6]
@@ -80,19 +81,20 @@ type opcode struct {
 }
 
 var opcodes = []opcode{
-	/*     T  A    B       C     mode         name       action */
+	/*T A    B       C     mode         name       action */
 	{0, 1, OpArgR, OpArgN, IABC /* */, "MOVE    ", move},     // R(A) := R(B)
 	{0, 1, OpArgK, OpArgN, IABx /* */, "LOADK   ", loadK},    // R(A) := Kst(Bx)
 	{0, 1, OpArgN, OpArgN, IABx /* */, "LOADKX  ", loadKx},   // R(A) := Kst(extra arg)
 	{0, 1, OpArgU, OpArgU, IABC /* */, "LOADBOOL", loadBool}, // R(A) := (bool)B; if (C) pc++
+	{0, 1, OpArgU, OpArgN, IABC /* */, "LOADNIL ", loadNil},  // R(A), R(A+1), ..., R(A+B) := nil
 	{0, 1, OpArgU, OpArgN, IABC /* */, "GETUPVAL", nil},      // R(A) := UpValue[B]
-	{0, 1, OpArgU, OpArgK, IABC /* */, "GETTABUP", nil},      // R(A) := UpValue[B][RK(C)]
+	{0, 1, OpArgU, OpArgK, IABC /* */, "GETTABUP", getTabUp}, // R(A) := UpValue[B][RK(C)]
 	{0, 1, OpArgR, OpArgK, IABC /* */, "GETTABLE", getTable}, // R(A) := R(B)[RK(C)]
 	{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABUP", nil},      // UpValue[A][RK(B)] := RK(C)
 	{0, 0, OpArgU, OpArgN, IABC /* */, "SETUPVAL", nil},      // UpValue[B] := R(A)
-	{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABLE", setTable}, // R(A)[RK(B)] := RK()
+	{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABLE", setTable}, // R(A)[RK(B)] := RK(C)
 	{0, 1, OpArgU, OpArgU, IABC /* */, "NEWTABLE", newTable}, // R(A) := {} (size = B,C)
-	{0, 1, OpArgR, OpArgK, IABC /* */, "SELF    ", nil},      // R(A+1) := R(B); R(A) := R(B)[RK(C)]
+	{0, 1, OpArgR, OpArgK, IABC /* */, "SELF    ", self},     // R(A+1) := R(B); R(A) := R(B)[RK(C)]
 	{0, 1, OpArgK, OpArgK, IABC /* */, "ADD     ", add},      // R(A) := RK(B) + RK(C)
 	{0, 1, OpArgK, OpArgK, IABC /* */, "SUB     ", sub},      // R(A) := RK(B) - RK(C)
 	{0, 1, OpArgK, OpArgK, IABC /* */, "MUL     ", mul},      // R(A) := RK(B) * RK(C)
@@ -116,15 +118,15 @@ var opcodes = []opcode{
 	{1, 0, OpArgK, OpArgK, IABC /* */, "LE      ", le},       // if ((RK(B) <= RK(C)) ~= A) then pc++
 	{1, 0, OpArgN, OpArgU, IABC /* */, "TEST    ", test},     // if not (R(A) <=> C) then pc++
 	{1, 1, OpArgR, OpArgU, IABC /* */, "TESTSET ", testSet},  // if (R(B) <=> C) then R(A) := R(B) else pc++
-	{0, 1, OpArgU, OpArgU, IABC /* */, "CALL    ", nil},      // R(A), ... ,R(A+C-2) := R(A)(R(A+1), ... ,R(A+B-1))
-	{0, 1, OpArgU, OpArgU, IABC /* */, "TAILCALL", nil},      // return R(A)(R(A+1), ... ,R(A+B-1))
-	{0, 0, OpArgU, OpArgN, IABC /* */, "RETURN  ", nil},      // return R(A), ... ,R(A+B-2)
+	{0, 1, OpArgU, OpArgU, IABC /* */, "CALL    ", call},     // R(A), ... ,R(A+C-2) := R(A)(R(A+1), ... ,R(A+B-1))
+	{0, 1, OpArgU, OpArgU, IABC /* */, "TAILCALL", tailCall}, // return R(A)(R(A+1), ... ,R(A+B-1))
+	{0, 0, OpArgU, OpArgN, IABC /* */, "RETURN  ", _return},  // return R(A), ... ,R(A+B-2)
 	{0, 1, OpArgR, OpArgN, IAsBx /**/, "FORLOOP ", forLoop},  // R(A)+=R(A+2); if R(A) <?= R(A+1) then { pc+=sBx; R(A+3)=R(A) }
 	{0, 1, OpArgR, OpArgN, IAsBx /**/, "FORPREP ", forPrep},  // R(A)-=R(A+2); pc+=sBx
 	{0, 0, OpArgN, OpArgU, IABC /* */, "TFORCALL", nil},      // R(A+3), ... ,R(A+2+C) := R(A)(R(A+1), R(A+2));
 	{0, 1, OpArgR, OpArgN, IAsBx /**/, "TFORLOOP", nil},      // if R(A+1) ~= nil then { R(A)=R(A+1); pc += sBx }
 	{0, 0, OpArgU, OpArgU, IABC /* */, "SETLIST ", setList},  // R(A)[(C-1)*FPF+i] := R(A+i), 1 <= i <= B
-	{0, 1, OpArgU, OpArgN, IABx /* */, "CLOSURE ", nil},      // R(A) := closure(KPROTO[Bx])
-	{0, 1, OpArgU, OpArgN, IABC /* */, "VARARG  ", nil},      // R(A), R(A+1), ..., R(A+B-2) = vararg
+	{0, 1, OpArgU, OpArgN, IABx /* */, "CLOSURE ", closure},  // R(A) := closure(KPROTO[Bx])
+	{0, 1, OpArgU, OpArgN, IABC /* */, "VARARG  ", vararg},   // R(A), R(A+1), ..., R(A+B-2) = vararg
 	{0, 0, OpArgU, OpArgU, IAx /*  */, "EXTRAARG", nil},      // extra (larger) argument for previous opcode
 }

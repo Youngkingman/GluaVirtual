@@ -1,5 +1,7 @@
 package state
 
+import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+
 func (st *LuaState) PushNil() {
 	st.stack.push(nil)
 }
@@ -18,4 +20,13 @@ func (st *LuaState) PushNumber(n float64) {
 
 func (st *LuaState) PushString(s string) {
 	st.stack.push(s)
+}
+
+func (st *LuaState) PushGoFunction(f luaApi.GoFunction) {
+	st.stack.push(newGoClosure(f))
+}
+
+func (st *LuaState) PushGlobalTable() {
+	global := st.registry.get(luaApi.LUA_RIDX_GLOBALS)
+	st.stack.push(global)
 }

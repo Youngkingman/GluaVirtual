@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	filename = "luac.out"
+	filename = "fornum.out"
 )
 
 func Test_ParseFunc(t *testing.T) {

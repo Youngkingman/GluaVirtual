@@ -1,6 +1,8 @@
 package vm
 
-import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+import (
+	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+)
 
 //对数值型的for循环，lua编译器会预先使用三个特殊局部变量，分别存放数值、循环限制条件和循环步长
 //对应寄存器为指令中的a/a+1/a+2，自定义的循环变量i则存放在a+3里面
@@ -38,7 +40,6 @@ func forPrep(i Instruction, vm luaApi.LuaVMInterface) {
 func forLoop(i Instruction, vm luaApi.LuaVMInterface) {
 	a, sBx := i.AsBx()
 	a += 1
-
 	vm.PushValue(a + 2)
 	vm.PushValue(a)
 	//先加上步长
