@@ -1,10 +1,9 @@
 package state
 
 import (
-	"fmt"
 	"testing"
 
-	. "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 )
 
 func Test_StackBasicFunc(t *testing.T) {
@@ -37,32 +36,14 @@ func Test_StackArithMethod(t *testing.T) {
 	st.PushString("3.0")
 	st.PushNumber(4.00)
 	printStack(st)
-	st.Arith(LUA_OPADD) //add 3.0 and 4.00
+	st.Arith(luaApi.LUA_OPADD) //add 3.0 and 4.00
 	printStack(st)
-	st.Arith(LUA_OPBNOT) //reverse 7(0x0000000111)-> -8补码
+	st.Arith(luaApi.LUA_OPBNOT) //reverse 7(0x0000000111)-> -8补码
 	printStack(st)
 	st.Len(2) //len of ["2.00"]
 	printStack(st)
 	st.Concat(3) //concat string from 1 to 3
 	printStack(st)
-	st.PushBoolean(st.Compare(1, 2, LUA_OPEQ))
+	st.PushBoolean(st.Compare(1, 2, luaApi.LUA_OPEQ))
 	printStack(st)
-}
-
-func printStack(ls *LuaState) {
-	top := ls.GetTop()
-	for i := 1; i <= top; i++ {
-		t := ls.Type(i)
-		switch t {
-		case LUA_TBOOLEAN:
-			fmt.Printf("[%t]", ls.ToBoolean(i))
-		case LUA_TNUMBER:
-			fmt.Printf("[%g]", ls.ToNumber(i))
-		case LUA_TSTRING:
-			fmt.Printf("[%q]", ls.ToString(i))
-		default: // other values
-			fmt.Printf("[%s]", ls.TypeName(t))
-		}
-	}
-	fmt.Println()
 }

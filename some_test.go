@@ -19,7 +19,7 @@ var filenames = [...]string{
 }
 
 func Test_ParseFunc(t *testing.T) {
-	data, err := ioutil.ReadFile(filenames[1])
+	data, err := ioutil.ReadFile(filenames[3])
 	if err != nil {
 		panic(err)
 	}
@@ -28,12 +28,12 @@ func Test_ParseFunc(t *testing.T) {
 }
 
 func Test_FunctionCall(t *testing.T) {
-	data, err := ioutil.ReadFile(filenames[1])
+	data, err := ioutil.ReadFile(filenames[2])
 	if err != nil {
 		panic(err)
 	}
 	st := state.New()
-	st.Load(data, filenames[1], "b")
+	st.Load(data, filenames[2], "b")
 	st.Call(0, 0)
 }
 
@@ -186,19 +186,19 @@ func printOperands(i vm.Instruction) {
 	}
 }
 
-func printStack(ls *state.LuaState) {
-	top := ls.GetTop()
+func printStack(st *state.LuaState) {
+	top := st.GetTop()
 	for i := 1; i <= top; i++ {
-		t := ls.Type(i)
+		t := st.Type(i)
 		switch t {
 		case luaApi.LUA_TBOOLEAN:
-			fmt.Printf("[%t]", ls.ToBoolean(i))
+			fmt.Printf("[%t]", st.ToBoolean(i))
 		case luaApi.LUA_TNUMBER:
-			fmt.Printf("[%g]", ls.ToNumber(i))
+			fmt.Printf("[%g]", st.ToNumber(i))
 		case luaApi.LUA_TSTRING:
-			fmt.Printf("[%q]", ls.ToString(i))
+			fmt.Printf("[%q]", st.ToString(i))
 		default: // other values
-			fmt.Printf("[%s]", ls.TypeName(t))
+			fmt.Printf("[%s]", st.TypeName(t))
 		}
 	}
 	fmt.Println()

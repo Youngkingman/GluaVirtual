@@ -1,6 +1,8 @@
 package vm
 
-import "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+import (
+	"github.com/Youngkingman/GluaVirtual/luaState/luaApi"
+)
 
 //R(A)=closure(KPROTO[Bx]) 实例化闭包为函数对象
 func closure(i Instruction, vm luaApi.LuaVMInterface) {
@@ -28,11 +30,11 @@ func _pushFuncAndArgs(a, b int, vm luaApi.LuaVMInterface) (nArgs int) {
 		for i := a; i < a+b; i++ {
 			vm.PushValue(i)
 		}
+		return b - 1
 	} else { //can be zero
 		_fixStack(a, vm)
 		return vm.GetTop() - vm.RegisterCount() - 1
 	}
-	return
 }
 
 //c为0表示要将参数全部展开传出，用于函数作为闭包返回时
