@@ -15,6 +15,7 @@ var filenames = [...]string{
 	"test.out",
 	"fornum.out",
 	"funcCall.out",
+	"hw.out",
 }
 
 func Test_ParseFunc(t *testing.T) {
@@ -36,13 +37,40 @@ func Test_ExcuteOpt(t *testing.T) {
 }
 
 func Test_FunctionCall(t *testing.T) {
-	data, err := ioutil.ReadFile(filenames[2])
+	data, err := ioutil.ReadFile(filenames[1])
 	if err != nil {
 		panic(err)
 	}
 	st := state.New()
-	st.Load(data, filenames[2], "b")
+	st.Load(data, filenames[1], "b")
 	st.Call(0, 0)
+}
+
+func Test_Print(t *testing.T) {
+	data, err := ioutil.ReadFile(filenames[3])
+	if err != nil {
+		panic(err)
+	}
+	st := state.New()
+	st.Register("print", print)
+	st.Load(data, "chunk", "b")
+	st.Call(0, 0)
+}
+
+func print(st luaApi.LuaStateInterface) int {
+	nArgs := st.GetTop()
+	for i := 1; i <= nArgs; i++ {
+		if st.IsBoolean(i) {
+			fmt.Printf("%t", st.ToBoolean(i))
+		} else {
+			fmt.Print(st.TypeName(st.Type(i)))
+		}
+		if i < nArgs {
+			fmt.Print("\t")
+		}
+	}
+	fmt.Println()
+	return 0
 }
 
 func list(f *binarychunk.Prototype) {

@@ -40,6 +40,11 @@ func (st *LuaState) getTable(t, k luaValue) luaApi.LuaType {
 	panic("not a table")
 }
 
+func (st *LuaState) GetGlobal(name string) luaApi.LuaType {
+	t := st.registry.get(luaApi.LUA_RIDX_GLOBALS) //获取注册表
+	return st.getTable(t, name)                   //设置注册表
+}
+
 //将栈顶给出的值和键插入索引的表中
 func (st *LuaState) SetTable(idx int) {
 	t := st.stack.get(idx)
@@ -68,4 +73,15 @@ func (st *LuaState) setTable(t, k, v luaValue) {
 		return
 	}
 	panic("not a table")
+}
+
+func (st *LuaState) SetGlobal(name string) {
+	t := st.registry.get(luaApi.LUA_RIDX_GLOBALS)
+	v := st.stack.pop()
+	st.setTable(t, name, v)
+}
+
+func (st *LuaState) Register(name string, f luaApi.GoFunction) {
+	st.PushGoFunction(f)
+	st.SetGlobal(name)
 }
