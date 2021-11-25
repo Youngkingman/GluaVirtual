@@ -87,14 +87,14 @@ var opcodes = []opcode{
 	{0, 1, OpArgN, OpArgN, IABx /* */, "LOADKX  ", loadKx},         // R(A) := Kst(extra arg)
 	{0, 1, OpArgU, OpArgU, IABC /* */, "LOADBOOL", loadBool},       // R(A) := (bool)B; if (C) pc++
 	{0, 1, OpArgU, OpArgN, IABC /* */, "LOADNIL ", loadNil},        // R(A), R(A+1), ..., R(A+B) := nil
-	{0, 1, OpArgU, OpArgN, IABC /* */, "GETUPVAL", getTabUp},       // R(A) := UpValue[B]
-	{0, 1, OpArgU, OpArgK, IABC /* */, "GETTABUP", nil},            // R(A) := UpValue[B][RK(C)]
-	opcode{0, 1, OpArgR, OpArgK, IABC /* */, "GETTABLE", getTable}, // R(A) := R(B)[RK(C)]
-	opcode{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABUP", nil},      // UpValue[A][RK(B)] := RK(C)
-	opcode{0, 0, OpArgU, OpArgN, IABC /* */, "SETUPVAL", nil},      // UpValue[B] := R(A)
-	opcode{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABLE", setTable}, // R(A)[RK(B)] := RK(C)
-	opcode{0, 1, OpArgU, OpArgU, IABC /* */, "NEWTABLE", newTable}, // R(A) := {} (size = B,C)
-	opcode{0, 1, OpArgR, OpArgK, IABC /* */, "SELF    ", self},     // R(A+1) := R(B); R(A) := R(B)[RK(C)]
+	{0, 1, OpArgU, OpArgN, IABC /* */, "GETUPVAL", nil},            // R(A) := UpValue[B]
+	{0, 1, OpArgU, OpArgK, IABC /* */, "GETTABUP", getTabUp},       // R(A) := UpValue[B][RK(C)]
+	{0, 1, OpArgR, OpArgK, IABC /* */, "GETTABLE", getTable},       // R(A) := R(B)[RK(C)]
+	{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABUP", nil},            // UpValue[A][RK(B)] := RK(C)
+	{0, 0, OpArgU, OpArgN, IABC /* */, "SETUPVAL", nil},            // UpValue[B] := R(A)
+	{0, 0, OpArgK, OpArgK, IABC /* */, "SETTABLE", setTable},       // R(A)[RK(B)] := RK(C)
+	{0, 1, OpArgU, OpArgU, IABC /* */, "NEWTABLE", newTable},       // R(A) := {} (size = B,C)
+	{0, 1, OpArgR, OpArgK, IABC /* */, "SELF    ", self},           // R(A+1) := R(B); R(A) := R(B)[RK(C)]
 	opcode{0, 1, OpArgK, OpArgK, IABC /* */, "ADD     ", add},      // R(A) := RK(B) + RK(C)
 	opcode{0, 1, OpArgK, OpArgK, IABC /* */, "SUB     ", sub},      // R(A) := RK(B) - RK(C)
 	opcode{0, 1, OpArgK, OpArgK, IABC /* */, "MUL     ", mul},      // R(A) := RK(B) * RK(C)
