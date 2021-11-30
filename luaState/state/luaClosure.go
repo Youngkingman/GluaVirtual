@@ -9,12 +9,25 @@ import (
 type luaClosure struct {
 	proto  *binarychunk.Prototype
 	goFunc luaApi.GoFunction
+	upvals []*upvalue
+}
+
+type upvalue struct {
+	val *luaValue
 }
 
 func newLuaClosure(proto *binarychunk.Prototype) *luaClosure {
-	return &luaClosure{proto: proto}
+	c := &luaClosure{proto: proto}
+	if nUpvals := len(proto.Upvalues); nUpvals > 0 {
+		c.upvals = make([]*upvalue, nUpvals)
+	}
+	return c
 }
 
-func newGoClosure(f luaApi.GoFunction) *luaClosure {
-	return &luaClosure{goFunc: f}
+func newGoClosure(f luaApi.GoFunction, nUpvals int) *luaClosure {
+	c := &luaClosure{goFunc: f}
+	if nUpvals > 0 {
+		c.upvals = make([]*upvalue, nUpvals)
+	}
+	return c
 }

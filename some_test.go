@@ -53,6 +53,8 @@ func print(st luaApi.LuaStateInterface) int {
 	for i := 1; i <= nArgs; i++ {
 		if st.IsBoolean(i) {
 			fmt.Printf("%t", st.ToBoolean(i))
+		} else if st.IsString(i) {
+			fmt.Print(st.ToString(i))
 		} else {
 			fmt.Print(st.TypeName(st.Type(i)))
 		}

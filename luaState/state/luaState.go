@@ -31,3 +31,13 @@ func (st *LuaState) popLuaStack() {
 	st.stack = stack.prev
 	stack.prev = nil
 }
+
+func (st *LuaState) PushGoClosure(f luaApi.GoFunction, n int) {
+	closure := newGoClosure(f, n)
+	//将栈顶的n个数作为upvalue加入go的闭包中并传递
+	for i := n; i > 0; i-- {
+		val := st.stack.pop()
+		closure.upvals[n-1] = &upvalue{&val}
+	}
+	st.stack.push(closure)
+}

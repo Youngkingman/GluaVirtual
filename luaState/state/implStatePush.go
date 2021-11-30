@@ -23,7 +23,7 @@ func (st *LuaState) PushString(s string) {
 }
 
 func (st *LuaState) PushGoFunction(f luaApi.GoFunction) {
-	st.stack.push(newGoClosure(f))
+	st.stack.push(newGoClosure(f, 0))
 }
 
 func (st *LuaState) PushGlobalTable() {

@@ -13,6 +13,8 @@ type luaStack struct {
 	pc      int
 	//used to access registry
 	state *LuaState
+	//map of upvalues, open upvalue or closed upvalue
+	openuvs map[int]*upvalue
 }
 
 func newLuaStack(size int, st *LuaState) *luaStack {
@@ -61,6 +63,12 @@ func (stk *luaStack) absIndex(idx int) int {
 }
 
 func (stk *luaStack) isValid(idx int) bool {
+	if idx < luaApi.LUA_REGISTRYINDEX {
+		//小于注册表索引说明是upvalue的伪索引
+		uvIdx := luaApi.LUA_REGISTRYINDEX - idx - 1
+		c := stk.closure
+		return c != nil && uvIdx < len(c.upvals)
+	}
 	if idx == luaApi.LUA_REGISTRYINDEX {
 		//注册表有效
 		return true
@@ -70,6 +78,15 @@ func (stk *luaStack) isValid(idx int) bool {
 }
 
 func (stk *luaStack) get(idx int) luaValue {
+	if idx < luaApi.LUA_REGISTRYINDEX {
+		//小于注册表索引说明是upvalue的伪索引
+		uvidx := luaApi.LUA_REGISTRYINDEX - idx - 1
+		c := stk.closure
+		if c == nil || uvidx >= len(c.upvals) {
+			return nil
+		}
+		return *(c.upvals[uvidx].val)
+	}
 	if idx == luaApi.LUA_REGISTRYINDEX {
 		//直接返回注册表
 		return stk.state.registry
@@ -81,6 +98,15 @@ func (stk *luaStack) get(idx int) luaValue {
 }
 
 func (stk *luaStack) set(idx int, val luaValue) {
+	if idx < luaApi.LUA_REGISTRYINDEX {
+		//小于注册表索引说明是upvalue的伪索引
+		uvidx := luaApi.LUA_REGISTRYINDEX - idx - 1
+		c := stk.closure
+		if c != nil && uvidx < len(c.upvals) {
+			*(c.upvals[uvidx].val) = val
+		}
+		return
+	}
 	if idx == luaApi.LUA_REGISTRYINDEX {
 		//注册表设置不用转换,如果传入val是nil可能会清空注册表
 		stk.state.registry = val.(*luaTable)
