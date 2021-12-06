@@ -66,3 +66,13 @@ func (st *LuaState) LoadProto(idx int) {
 		}
 	}
 }
+
+func (st *LuaState) CloseUpvalues(a int) {
+	for i, openuv := range st.stack.openuvs {
+		if i >= a-1 {
+			val := *openuv.val
+			openuv.val = &val
+			delete(st.stack.openuvs, i)
+		}
+	}
+}

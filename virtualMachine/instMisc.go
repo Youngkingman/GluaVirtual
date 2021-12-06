@@ -10,11 +10,12 @@ func move(i Instruction, vm luaApi.LuaVMInterface) {
 	vm.Copy(b, a)
 }
 
+//pc += sbx, 如果a不为0那么要把R（A-1）以上的所有upvalue闭合
 func jmp(i Instruction, vm luaApi.LuaVMInterface) {
 	a, sbx := i.AsBx()
 	vm.OffsetPC(sbx)
 	if a != 0 {
 		//和upvalue有关
-		panic("")
+		vm.CloseUpvalues(a)
 	}
 }
