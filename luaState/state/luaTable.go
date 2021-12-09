@@ -7,8 +7,9 @@ import (
 )
 
 type luaTable struct {
-	luaArr []luaValue
-	luaMap map[luaValue]luaValue
+	luaArr    []luaValue
+	luaMap    map[luaValue]luaValue
+	metatable *luaTable
 }
 
 func newLuaTable(nArr, nRec int) *luaTable {
@@ -101,4 +102,8 @@ func (tab *luaTable) expandArray() {
 
 func (tab *luaTable) tablen() int {
 	return len(tab.luaArr)
+}
+
+func (tab *luaTable) hasMetafield(fieldname string) bool {
+	return tab.metatable != nil && tab.metatable.get(fieldname) != nil
 }

@@ -1,6 +1,8 @@
 package state
 
 import (
+	"fmt"
+
 	. "github.com/Youngkingman/GluaVirtual/luaState/luaApi"
 	"github.com/Youngkingman/GluaVirtual/numTrans"
 )
@@ -63,4 +65,47 @@ func convertToInteger(val luaValue) (int64, bool) {
 	default:
 	}
 	return 0, false
+}
+
+func setMetatable(val luaValue, mt *luaTable, st *LuaState) {
+	if t, ok := val.(*luaTable); ok {
+		//赋予元表,直接修改元表字段
+		t.metatable = mt
+		return
+	}
+	//不是表类型，根据类型放在注册表里,元表若为nil效果相当于删除元表
+	key := fmt.Sprintf("_MT%d", typeOf(val))
+	st.registry.put(key, mt)
+}
+
+func getMetatable(val luaValue, st *LuaState) *luaTable {
+	if t, ok := val.(*luaTable); ok {
+		return t.metatable
+	}
+	key := fmt.Sprintf("_MT%d", typeOf(val))
+	if mt := st.registry.get(key); mt != nil {
+		return mt.(*luaTable)
+	}
+	return nil
+}
+
+func callMetamethod(a, b luaValue, mmName string, st *LuaState) (luaValue, bool) {
+	var mm luaValue
+	if mm = getMetafield(b, mmName, st); mm == nil {
+		return nil, false
+	}
+
+	st.stack.check(4)
+	st.stack.push(mm)
+	st.stack.push(a)
+	st.stack.push(b)
+	st.Call(2, 1)
+	return st.stack.pop(), true
+}
+
+func getMetafield(val luaValue, fieldName string, st *LuaState) luaValue {
+	if mt := getMetatable(val, st); mt != nil {
+		return mt.get(fieldName)
+	}
+	return nil
 }

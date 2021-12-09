@@ -9,16 +9,16 @@ func (st *LuaState) Compare(idx1, idx2 int, op CompareOp) bool {
 	b := st.stack.get(idx2)
 	switch op {
 	case LUA_OPEQ:
-		return _eq(a, b)
+		return _eq(a, b, st)
 	case LUA_OPLT:
-		return _lt(a, b)
+		return _lt(a, b, st)
 	case LUA_OPLE:
-		return _le(a, b)
+		return _le(a, b, st)
 	}
 	return false
 }
 
-func _eq(a, b luaValue) bool {
+func _eq(a, b luaValue, st *LuaState) bool {
 	switch x := a.(type) {
 	case nil:
 		return b == nil
@@ -46,12 +46,19 @@ func _eq(a, b luaValue) bool {
 		default:
 			return false
 		}
+	case *luaTable:
+		if y, ok := b.(*luaTable); ok && x != y && st != nil { //为nil时不希望执行元方法
+			if result, ok := callMetamethod(x, y, "__eq", st); ok {
+				return convertToBoolean(result)
+			}
+		}
 	default:
 		return a == b
 	}
+	return true
 }
 
-func _lt(a, b luaValue) bool {
+func _lt(a, b luaValue, st *LuaState) bool {
 	switch x := a.(type) {
 	case string:
 		if y, ok := b.(string); ok {
@@ -72,10 +79,15 @@ func _lt(a, b luaValue) bool {
 			return x < float64(y)
 		}
 	}
-	panic("comparison error!")
+	if result, ok := callMetamethod(a, b, "__lt", st); ok {
+		return convertToBoolean(result)
+	} else {
+		panic("comparison error!")
+	}
+
 }
 
-func _le(a, b luaValue) bool {
+func _le(a, b luaValue, st *LuaState) bool {
 	switch x := a.(type) {
 	case string:
 		if y, ok := b.(string); ok {
@@ -95,6 +107,11 @@ func _le(a, b luaValue) bool {
 		case int64:
 			return x <= float64(y)
 		}
+	}
+	if result, ok := callMetamethod(a, b, "__le", st); ok {
+		return convertToBoolean(result)
+	} else if result, ok := callMetamethod(a, b, "__lt", st); ok { //没有le元方法就尝试下别的
+		return !convertToBoolean(result)
 	}
 	panic("comparison error!")
 }
