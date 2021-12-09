@@ -18,6 +18,16 @@ func (st *LuaState) Compare(idx1, idx2 int, op CompareOp) bool {
 	return false
 }
 
+func (st *LuaState) RawEqual(idx1, idx2 int) bool {
+	if !st.stack.isValid(idx1) || !st.stack.isValid(idx2) {
+		return false
+	}
+
+	a := st.stack.get(idx1)
+	b := st.stack.get(idx2)
+	return _eq(a, b, nil)
+}
+
 func _eq(a, b luaValue, st *LuaState) bool {
 	switch x := a.(type) {
 	case nil:

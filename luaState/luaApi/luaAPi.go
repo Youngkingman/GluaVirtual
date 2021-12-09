@@ -119,6 +119,15 @@ type LuaStateInterface interface {
 	Register(name string, f GoFunction)
 	/*like C's pushCClosure*/
 	PushGoClosure(f GoFunction, n int)
+	/*manipulation of metatable and metamethod*/
+	GetMetaTable(idx int) bool
+	SetMetaTable(idx int)
+	RawLen(idx int) uint
+	RawEqual(idx1, idx2 int) bool
+	RawGet(idx int) LuaType
+	RawSet(idx int)
+	RawGetI(idx int, i int64) LuaType
+	RawSetI(idx int, i int64)
 }
 
 func LuaUpvalueIndex(i int) int {

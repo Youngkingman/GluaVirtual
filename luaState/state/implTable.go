@@ -19,6 +19,12 @@ func (st *LuaState) GetTable(idx int) luaApi.LuaType {
 	return st.getTable(t, k, false) //false触发元方法，下同
 }
 
+func (st *LuaState) RawGet(idx int) luaApi.LuaType {
+	t := st.stack.get(idx)
+	k := st.stack.pop()
+	return st.getTable(t, k, true) //false触发元方法，下同
+}
+
 //根据给定的字符串对给定索引的表进行查询
 func (st *LuaState) GetField(idx int, k string) luaApi.LuaType {
 	t := st.stack.get(idx)
@@ -29,6 +35,21 @@ func (st *LuaState) GetField(idx int, k string) luaApi.LuaType {
 func (st *LuaState) GetI(idx int, i int64) luaApi.LuaType {
 	t := st.stack.get(idx)
 	return st.getTable(t, i, false)
+}
+
+func (st *LuaState) RawGetI(idx int, i int64) luaApi.LuaType {
+	t := st.stack.get(idx)
+	return st.getTable(t, i, true)
+}
+
+//索引处若存在元表则把元表推入栈（帧）顶返回true，否则不改变栈（帧）的状态
+func (st *LuaState) GetMetaTable(idx int) bool {
+	val := st.stack.get(idx)
+	if mt := getMetatable(val, st); mt != nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (st *LuaState) getTable(t, k luaValue, raw bool) luaApi.LuaType {
@@ -74,6 +95,13 @@ func (st *LuaState) SetTable(idx int) {
 	st.setTable(t, k, v, false)
 }
 
+func (st *LuaState) RawSet(idx int) {
+	t := st.stack.get(idx)
+	v := st.stack.pop()
+	k := st.stack.pop()
+	st.setTable(t, k, v, true)
+}
+
 //对指定索引的表和字符串索引插入栈顶内容
 func (st *LuaState) SetField(idx int, k string) {
 	t := st.stack.get(idx)
@@ -86,6 +114,12 @@ func (st *LuaState) SetI(idx int, n int64) {
 	t := st.stack.get(idx)
 	v := st.stack.pop()
 	st.setTable(t, n, v, false)
+}
+
+func (st *LuaState) RawSetI(idx int, n int64) {
+	t := st.stack.get(idx)
+	v := st.stack.pop()
+	st.setTable(t, n, v, true)
 }
 
 func (st *LuaState) setTable(t, k, v luaValue, raw bool) {
@@ -119,6 +153,20 @@ func (st *LuaState) SetGlobal(name string) {
 	t := st.registry.get(luaApi.LUA_RIDX_GLOBALS)
 	v := st.stack.pop()
 	st.setTable(t, name, v, false)
+}
+
+//栈顶弹出一个表，指定索引处值的元表设置为该表
+func (st *LuaState) SetMetaTable(idx int) {
+	val := st.stack.get(idx)
+	mtVal := st.stack.pop()
+
+	if mtVal == nil { //效果等于删除元表
+		setMetatable(val, nil, st)
+	} else if mt, ok := mtVal.(*luaTable); ok {
+		setMetatable(val, mt, st)
+	} else {
+		panic("table expected")
+	}
 }
 
 func (st *LuaState) Register(name string, f luaApi.GoFunction) {

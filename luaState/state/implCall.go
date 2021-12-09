@@ -22,7 +22,19 @@ func (st *LuaState) Load(chunk []byte, chunkName, mode string) int {
 
 func (st *LuaState) Call(nArgs, nResults int) {
 	val := st.stack.get(-(nArgs + 1))
-	if c, ok := val.(*luaClosure); ok {
+	c, ok := val.(*luaClosure)
+	//如果参数不是closure，则查找其__call元方法
+	if !ok {
+		if mf := getMetafield(val, "__call", st); mf != nil {
+			if c, ok = mf.(*luaClosure); ok {
+				st.stack.push(val)
+				st.Insert(-(nArgs + 2))
+				nArgs += 1
+			}
+		}
+	}
+
+	if ok {
 		if c.proto != nil {
 			//打印调试信息
 			//实际执行Lua函数
@@ -31,9 +43,8 @@ func (st *LuaState) Call(nArgs, nResults int) {
 			//实际执行Go函数
 			st.callGoClosure(nArgs, nResults, c)
 		}
-	} else {
-		panic(fmt.Sprintf("not a function to call args:%d results:%d", nArgs, nResults))
 	}
+	panic(fmt.Sprintf("not a function to call args:%d results:%d and no metamethod __call", nArgs, nResults))
 }
 
 func (st *LuaState) callLuaClosure(nArgs, nResults int, c *luaClosure) {
