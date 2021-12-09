@@ -10,6 +10,10 @@ type luaTable struct {
 	luaArr    []luaValue
 	luaMap    map[luaValue]luaValue
 	metatable *luaTable
+	//用于实现迭代器
+	keys    map[luaValue]luaValue
+	changed bool
+	lastKey luaValue
 }
 
 func newLuaTable(nArr, nRec int) *luaTable {
@@ -106,4 +110,30 @@ func (tab *luaTable) tablen() int {
 
 func (tab *luaTable) hasMetafield(fieldname string) bool {
 	return tab.metatable != nil && tab.metatable.get(fieldname) != nil
+}
+
+func (tab *luaTable) nextKey(key luaValue) luaValue {
+	if tab.keys == nil || key == nil {
+		tab.initKeys()
+		tab.changed = false
+	}
+
+	return tab.keys[key]
+}
+
+func (tab *luaTable) initKeys() {
+	tab.keys = make(map[luaValue]luaValue)
+	var key luaValue = nil
+	for i, v := range tab.luaArr {
+		if v != nil {
+			tab.keys[key] = int64(i + 1)
+			key = int64(i + 1) //将所有索引错开一位满足lua要求
+		}
+	}
+	for k, v := range tab.luaMap {
+		if v != nil {
+			tab.keys[key] = k
+			key = k
+		}
+	}
 }

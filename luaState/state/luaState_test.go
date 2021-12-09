@@ -47,3 +47,15 @@ func Test_StackArithMethod(t *testing.T) {
 	st.PushBoolean(st.Compare(1, 2, luaApi.LUA_OPEQ))
 	printStack(st)
 }
+
+func Test_NextFunc(t *testing.T)
+
+func next(st LuaState) int {
+	st.SetTop(2)
+	if st.Next(1) {
+		return 2
+	} else {
+		st.PushNil()
+		return 1
+	}
+}

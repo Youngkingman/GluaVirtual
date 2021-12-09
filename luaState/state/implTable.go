@@ -173,3 +173,18 @@ func (st *LuaState) Register(name string, f luaApi.GoFunction) {
 	st.PushGoFunction(f)
 	st.SetGlobal(name)
 }
+
+//表迭代器的实现,传入的索引必得是表
+func (st *LuaState) Next(idx int) bool {
+	val := st.stack.get(idx)
+	if t, ok := val.(*luaTable); ok {
+		key := st.stack.pop()
+		if nextkey := t.nextKey(key); nextkey != nil {
+			st.stack.push(nextkey)
+			st.stack.push(t.get(nextkey))
+			return true
+		}
+		return false
+	}
+	panic("table expected")
+}

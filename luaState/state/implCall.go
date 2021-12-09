@@ -114,7 +114,9 @@ func (st *LuaState) callGoClosure(nArgs, nResults int, c *luaClosure) {
 	}
 }
 
+/************************/
 /*调试时打印堆栈和指令信息*/
+/************************/
 func printStack(st *LuaState) {
 	top := st.GetTop()
 	for i := 1; i <= top; i++ {

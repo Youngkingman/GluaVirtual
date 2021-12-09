@@ -128,6 +128,8 @@ type LuaStateInterface interface {
 	RawSet(idx int)
 	RawGetI(idx int, i int64) LuaType
 	RawSetI(idx int, i int64)
+	/*iterator method*/
+	Next(idx int) bool
 }
 
 func LuaUpvalueIndex(i int) int {
