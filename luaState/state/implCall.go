@@ -114,6 +114,30 @@ func (st *LuaState) callGoClosure(nArgs, nResults int, c *luaClosure) {
 	}
 }
 
+func (st *LuaState) Error() int {
+	err := st.stack.pop()
+	panic(err)
+}
+
+func (st *LuaState) PCall(nArgs, nResults, msgh int) (status int) {
+	caller := st.stack
+	status = luaApi.LUA_ERRRUN
+
+	//catch error
+	defer func() {
+		if err := recover(); err != nil {
+			for st.stack != caller {
+				st.popLuaStack()
+			}
+			st.stack.push(err)
+		}
+	}()
+
+	st.Call(nArgs, nResults)
+	status = luaApi.LUA_OK
+	return
+}
+
 /************************/
 /*调试时打印堆栈和指令信息*/
 /************************/

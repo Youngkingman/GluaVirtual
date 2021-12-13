@@ -52,6 +52,17 @@ const LUAI_MAXSTACK = 1000000                   //正负一百万为lua栈有效
 const LUA_REGISTRYINDEX = -LUAI_MAXSTACK - 1000 //负的一百万是有效索引，减去1000为伪索引
 const LUA_RIDX_GLOBALS int64 = 2
 
+const (
+	LUA_OK = iota
+	LUA_YIELD
+	LUA_ERRRUN
+	LUA_ERRSYNTAX
+	LUA_ERRMEM
+	LUA_ERRGCMM
+	LUA_ERRERR
+	LUA_ERRFILE
+)
+
 type LuaStateInterface interface {
 	/* basic stack manipulation */
 	GetTop() int
@@ -130,6 +141,9 @@ type LuaStateInterface interface {
 	RawSetI(idx int, i int64)
 	/*iterator method*/
 	Next(idx int) bool
+	/*error and exception process*/
+	Error() int
+	PCall(nArgs, nResults, msgh int) int
 }
 
 func LuaUpvalueIndex(i int) int {

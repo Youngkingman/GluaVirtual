@@ -48,24 +48,6 @@ func Test_Print(t *testing.T) {
 	st.Call(0, 0)
 }
 
-func print(st luaApi.LuaStateInterface) int {
-	nArgs := st.GetTop()
-	for i := 1; i <= nArgs; i++ {
-		if st.IsBoolean(i) {
-			fmt.Printf("%t", st.ToBoolean(i))
-		} else if st.IsString(i) {
-			fmt.Print(st.ToString(i))
-		} else {
-			fmt.Print(st.TypeName(st.Type(i)))
-		}
-		if i < nArgs {
-			fmt.Print("\t")
-		}
-	}
-	fmt.Println()
-	return 0
-}
-
 func list(f *binarychunk.Prototype) {
 	printHeader(f)
 	printCode(f)
@@ -222,4 +204,74 @@ func LuaEntry(proto *binarychunk.Prototype) {
 			break
 		}
 	}
+}
+
+func Test_Iterator(t *testing.T) {
+
+}
+
+/*some function in standard lib*/
+
+func next(st luaApi.LuaStateInterface) int {
+	st.SetTop(2)
+	if st.Next(1) {
+		return 2
+	} else {
+		st.PushNil()
+		return 1
+	}
+}
+
+func paris(st luaApi.LuaStateInterface) int {
+	st.PushGoFunction(next)
+	st.PushValue(1)
+	st.PushNil()
+	return 3
+}
+
+func iparis(st luaApi.LuaStateInterface) int {
+	st.PushGoFunction(_iPairsAux) /*iteration function*/
+	st.PushValue(1)               /*state*/
+	st.PushInteger(0)             /*initial value*/
+	return 3
+}
+
+func _iPairsAux(st luaApi.LuaStateInterface) int {
+	i := st.ToInteger(2) + 1
+	st.PushInteger(i)
+	if st.GetI(1, i) == luaApi.LUA_TNIL {
+		return 1
+	} else {
+		return 2
+	}
+}
+
+func print(st luaApi.LuaStateInterface) int {
+	nArgs := st.GetTop()
+	for i := 1; i <= nArgs; i++ {
+		if st.IsBoolean(i) {
+			fmt.Printf("%t", st.ToBoolean(i))
+		} else if st.IsString(i) {
+			fmt.Print(st.ToString(i))
+		} else {
+			fmt.Print(st.TypeName(st.Type(i)))
+		}
+		if i < nArgs {
+			fmt.Print("\t")
+		}
+	}
+	fmt.Println()
+	return 0
+}
+
+func error(st luaApi.LuaStateInterface) int {
+	return st.Error()
+}
+
+func pCall(st luaApi.LuaStateInterface) int {
+	nArgs := st.GetTop() - 1
+	status := st.PCall(nArgs, -1, 0)
+	st.PushBoolean(status == luaApi.LUA_OK)
+	st.Insert(1)
+	return st.GetTop()
 }
